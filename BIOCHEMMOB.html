@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Interactive Guide to Biochemical Tests</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Slate & Sky -->
+    <!-- Application Structure Plan: The SPA is designed as a filterable dashboard. The primary navigation consists of buttons to filter tests by metabolic category (Carbohydrate, Protein, etc.) and a search bar for direct access. This structure was chosen over a linear document to empower users to quickly find relevant information without extensive scrolling. Test details are initially hidden within accordion-style cards, which the user can expand. This "progressive disclosure" approach prevents information overload and creates a clean, manageable interface. Key comparative data, like pH indicators, is visualized in an interactive chart for rapid understanding. This design prioritizes user-driven exploration and efficient information retrieval, which is ideal for a dense reference document. -->
+    <!-- Visualization & Content Choices: 
+        - Test Categories -> Goal: Organize -> Method: Filterable Buttons -> Interaction: Click to filter the grid of test cards -> Justification: Provides high-level navigation and reduces cognitive load.
+        - Individual Tests -> Goal: Inform/Organize -> Method: Accordion-style cards (HTML/CSS/JS) -> Interaction: Click to expand/collapse details -> Justification: Manages information density, allowing users to focus on one test at a time.
+        - pH Indicators -> Goal: Compare/Inform -> Method: Bar Chart (Chart.js/Canvas) -> Interaction: Hover to see details (acid/alkaline colors, pH range) -> Justification: Visually represents pH ranges for faster comparison than a table.
+        - Nitrate Reduction Pathway -> Goal: Explain Process -> Method: Diagram (HTML/Tailwind CSS) -> Interaction: Static visual flow -> Justification: A visual diagram is more intuitive for a multi-step process than pure text.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .card-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card.open .card-body {
+            max-height: 2000px; /* Large enough to fit content */
+        }
+        /* Custom scrollbar for filter container on mobile */
+        .filter-scroll-container::-webkit-scrollbar {
+            height: 4px;
+        }
+        .filter-scroll-container::-webkit-scrollbar-track {
+            background: #f1f5f9; /* slate-100 */
+        }
+        .filter-scroll-container::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* slate-400 */
+            border-radius: 2px;
+        }
+        .filter-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* slate-500 */
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <div class="container mx-auto p-2 sm:p-4 md:p-8">
+        
+        <header class="text-center mb-6 md:mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-sky-800">Comprehensive Guide to Biochemical Tests</h1>
+            <p class="mt-2 text-slate-600 max-w-3xl mx-auto px-2">An interactive dashboard for exploring the reagents, indicators, and principles of key biochemical tests used in clinical microbiology.</p>
+        </header>
+
+        <div class="mb-6 p-3 bg-white/80 backdrop-blur-sm rounded-xl shadow-md sticky top-2 z-20">
+            <div class="flex flex-col gap-4">
+                 <div id="filter-container-wrapper" class="w-full">
+                    <label class="text-sm font-medium text-slate-600 mb-2 block px-1">Filter by Category:</label>
+                    <div id="filter-buttons" class="filter-scroll-container flex items-center gap-2 overflow-x-auto pb-2">
+                        <!-- Filter buttons will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <main>
+            <section id="tests-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                <!-- Test cards will be injected here -->
+            </section>
+        </main>
+
+        <section id="visualizations" class="mt-12">
+            <h2 class="text-2xl font-bold text-center text-sky-800 mb-6">Key Visual Summaries</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-center mb-1">pH Indicator Color Ranges</h3>
+                    <p class="text-center text-slate-500 mb-6 text-sm">A visual comparison of the full pH color transition for each common indicator.</p>
+                    <div id="indicatorVisualsContainer" class="space-y-8 px-2">
+                        <!-- Indicator visuals will be injected here -->
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-center mb-4">Nitrate Reduction Pathway</h3>
+                     <p class="text-center text-slate-500 mb-4 text-sm">An illustration of the decision-making process for interpreting the Nitrate Reduction Test.</p>
+                    <div class="space-y-4">
+                        <div class="flex justify-center">
+                            <div class="p-3 bg-slate-100 border border-slate-300 rounded-lg text-center shadow-sm">Start: Nitrate Broth after Incubation</div>
+                        </div>
+                        <div class="flex justify-center">
+                            <div class="text-sky-600 font-bold">↓</div>
+                        </div>
+                        <div class="flex justify-center">
+                           <div class="p-3 bg-sky-100 border border-sky-300 rounded-lg text-center shadow-sm">Add Reagents A + B</div>
+                        </div>
+                        <div class="flex justify-center relative">
+                             <div class="border-l border-slate-400 h-6 absolute left-1/2"></div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 relative">
+                            <div class="absolute top-[-12px] left-0 right-0 h-[1px] bg-slate-400 hidden sm:block"></div>
+                            <div class="flex flex-col items-center space-y-2">
+                                <div class="text-sky-600 font-bold sm:hidden">↓</div>
+                                <div class="w-full p-3 bg-red-100 border border-red-300 rounded-lg text-center">Result: <span class="font-bold text-red-700">RED</span></div>
+                                <div class="text-sky-600 font-bold">↓</div>
+                                <div class="w-full p-3 bg-green-100 border border-green-400 rounded-lg text-center font-bold text-green-800">POSITIVE<br/><span class="text-xs font-normal">(NO₃ → NO₂)</span></div>
+                            </div>
+                            <div class="flex flex-col items-center space-y-2">
+                                <div class="text-sky-600 font-bold sm:hidden">↓</div>
+                                <div class="w-full p-3 bg-slate-100 border border-slate-300 rounded-lg text-center">Result: <span class="font-bold">Colorless</span></div>
+                                <div class="text-sky-600 font-bold">↓</div>
+                                <div class="w-full p-3 bg-sky-100 border border-sky-300 rounded-lg text-center">Add Zinc Dust</div>
+                                <div class="flex justify-center relative">
+                                    <div class="border-l border-slate-400 h-6 absolute left-1/2"></div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 relative">
+                                    <div class="absolute top-[-12px] left-0 right-0 h-[1px] bg-slate-400 hidden sm:block"></div>
+                                    <div class="flex flex-col items-center space-y-2">
+                                         <div class="text-sky-600 font-bold sm:hidden">↓</div>
+                                         <div class="w-full p-3 bg-red-100 border border-red-300 rounded-lg text-center">Result: <span class="font-bold text-red-700">RED</span></div>
+                                         <div class="text-sky-600 font-bold">↓</div>
+                                         <div class="w-full p-3 bg-red-100 border border-red-400 rounded-lg text-center font-bold text-red-800">NEGATIVE<br/><span class="text-xs font-normal">(Zinc reduced NO₃)</span></div>
+                                    </div>
+                                    <div class="flex flex-col items-center space-y-2">
+                                         <div class="text-sky-600 font-bold sm:hidden">↓</div>
+                                         <div class="w-full p-3 bg-slate-100 border border-slate-300 rounded-lg text-center">Result: <span class="font-bold">Colorless</span></div>
+                                         <div class="text-sky-600 font-bold">↓</div>
+                                         <div class="w-full p-3 bg-green-100 border border-green-400 rounded-lg text-center font-bold text-green-800">POSITIVE<br/><span class="text-xs font-normal">(NO₃ → N₂)</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        const testData = [
+            // Carbohydrate Metabolism
+            {
+                name: "Triple Sugar Iron (TSI) / KIA",
+                category: "Carbohydrate Metabolism",
+                principle: "Differentiates Enterobacterales based on fermentation of glucose, lactose, and/or sucrose, and H₂S production.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Key Components</h4><div class="overflow-x-auto"><table class="w-full text-sm text-left border-collapse"><thead><tr class="bg-slate-100"><th class="p-2 border">Component</th><th class="p-2 border">Reagent/Substrate</th><th class="p-2 border">Purpose</th></tr></thead><tbody><tr><td class="p-2 border font-medium">Carbohydrates</td><td class="p-2 border">Glucose (0.1%), Lactose (1.0%), Sucrose (1.0%)*</td><td class="p-2 border">Fermentable substrates. *Sucrose is absent in KIA.</td></tr><tr><td class="p-2 border font-medium">pH Indicator</td><td class="p-2 border">Phenol Red</td><td class="p-2 border">Detects acid production.</td></tr><tr><td class="p-2 border font-medium">H₂S Indicator</td><td class="p-2 border">Ferrous Sulfate (FeSO₄)</td><td class="p-2 border">Reacts with H₂S gas to form a black precipitate (FeS).</td></tr><tr><td class="p-2 border font-medium">Sulfur Source</td><td class="p-2 border">Sodium Thiosulfate</td><td class="p-2 border">Substrate for H₂S production.</td></tr></tbody></table></div><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><div class="overflow-x-auto"><table class="w-full text-sm text-left border-collapse"><thead><tr class="bg-slate-100"><th class="p-2 border">Slant/Butt</th><th class="p-2 border">Interpretation</th></tr></thead><tbody><tr><td class="p-2 border font-medium">K / A (Red/Yellow)</td><td class="p-2 border">Glucose fermentation only.</td></tr><tr><td class="p-2 border font-medium">A / A (Yellow/Yellow)</td><td class="p-2 border">Glucose + Lactose and/or Sucrose fermentation.</td></tr><tr><td class="p-2 border font-medium">⚫ Black Ppt</td><td class="p-2 border">H₂S Production (requires acid butt).</td></tr><tr><td class="p-2 border font-medium">Gas</td><td class="p-2 border">Bubbles/Cracks in agar.</td></tr></tbody></table></div><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Exam Pointer:</span> An organism that ferments sucrose but not lactose will be A/A on TSI but K/A on KIA (e.g., *Proteus vulgaris*).</div>`
+            },
+            {
+                name: "Oxidation-Fermentation (O-F) Test",
+                category: "Carbohydrate Metabolism",
+                principle: "Differentiates fermentative from oxidative metabolism of a carbohydrate.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Key Components</h4><p class="text-sm">Uses Hugh & Leifson's Medium, which has a low peptone to high carbohydrate ratio and Bromothymol Blue as the pH indicator.</p><h4 class="font-semibold mt-4 mb-2">Interpretation (Two Tubes: Open & Oil-covered)</h4><div class="overflow-x-auto"><table class="w-full text-sm text-left border-collapse"><thead><tr class="bg-slate-100"><th class="p-2 border">Open Tube</th><th class="p-2 border">Covered Tube</th><th class="p-2 border">Interpretation</th></tr></thead><tbody><tr><td class="p-2 border">🟡 Yellow</td><td class="p-2 border">🟡 Yellow</td><td class="p-2 border font-semibold">Fermenter</td></tr><tr><td class="p-2 border">🟡 Yellow</td><td class="p-2 border">🟢 Green</td><td class="p-2 border font-semibold">Oxidizer</td></tr><tr><td class="p-2 border">🟢 Green/🔵 Blue</td><td class="p-2 border">🟢 Green</td><td class="p-2 border font-semibold">Non-utilizer</td></tr></tbody></table></div>`
+            },
+            {
+                name: "Individual Carbohydrate Fermentation",
+                category: "Carbohydrate Metabolism",
+                principle: "Determines an organism's ability to ferment a specific carbohydrate, producing acid with or without gas.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><p class="text-sm">A nutrient broth base (e.g., Peptone water) is supplemented with a single carbohydrate (e.g., Mannitol, Sorbitol) at 0.5-1.0% and a pH indicator. An inverted Durham tube is added to detect gas production.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Acid Production:</span> Indicator changes color (e.g., Phenol Red turns 🟡 Yellow).</li><li><span class="font-bold text-green-600">Gas Production:</span> A bubble is trapped in the Durham tube.</li><li><span class="font-bold text-red-600">Negative:</span> No color change or gas production.</li></ul><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Alternative Indicator:</span> Andrade's Indicator (Acid Fuchsin) is colorless at neutral pH and turns pink/red when acidic.</div>`
+            },
+            {
+                name: "ONPG Test",
+                category: "Carbohydrate Metabolism",
+                principle: "Detects β-galactosidase, the enzyme that hydrolyzes lactose. Useful for identifying late or non-lactose fermenters that still possess the enzyme.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><p class="text-sm">The synthetic substrate Ortho-Nitrophenyl-β-D-galactopyranoside (ONPG) is used. It is colorless but yields a yellow product when hydrolyzed by β-galactosidase.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> 🟡 Development of a yellow color (ortho-nitrophenol).</li><li><span class="font-bold text-red-600">Negative:</span> Remains colorless.</li></ul><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Clinical Correlation:</span> Differentiates *Citrobacter* (+) from most *Salmonella* (-).</div>`
+            },
+            // Protein & Amino Acid Metabolism
+            {
+                name: "Indole Production Test",
+                category: "Protein & Amino Acid Metabolism",
+                principle: "Detects the enzyme tryptophanase, which hydrolyzes tryptophan to indole.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Procedure</h4><p class="text-sm">After incubation in Tryptone Broth (contains tryptophan), add Kovács' Reagent (p-Dimethylaminobenzaldehyde).</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> 🍒 Cherry-red ring at the top.</li><li><span class="font-bold text-red-600">Negative:</span> No color change.</li></ul><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Exam Pointer:</span> Key test for differentiating *E. coli* (+) from *Klebsiella pneumoniae* (-).</div>`
+            },
+            {
+                name: "Urease Test",
+                category: "Protein & Amino Acid Metabolism",
+                principle: "Detects the enzyme urease, which hydrolyzes urea to ammonia, causing a strong pH increase.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Medium</h4><p class="text-sm">Christensen's Urea Agar, which contains Urea, Phenol Red, and a weak phosphate buffer.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Rapid Positive:</span> 🩷 Bright pink/magenta within hours (e.g., *Proteus*, *Helicobacter*).</li><li><span class="font-bold text-green-600">Weak Positive:</span> Pink after 24-48 hours (e.g., *Klebsiella*).</li><li><span class="font-bold text-red-600">Negative:</span> No color change.</li></ul>`
+            },
+            {
+                name: "Phenylalanine Deaminase (PAD) Test",
+                category: "Protein & Amino Acid Metabolism",
+                principle: "Detects the oxidative deamination of phenylalanine to phenylpyruvic acid.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Procedure</h4><p class="text-sm">After incubation on Phenylalanine Agar, add 10% Ferric Chloride (FeCl₃).</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> 🌲 Deep, stable green color.</li><li><span class="font-bold text-red-600">Negative:</span> No color change.</li></ul><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Exam Pointer:</span> A key test for the *Proteus-Providencia-Morganella* group.</div>`
+            },
+            {
+                name: "Decarboxylase Tests (LDC, ODC)",
+                category: "Protein & Amino Acid Metabolism",
+                principle: "Detects the removal of a carboxyl group from an amino acid under anaerobic, acidic conditions.",
+                details: `<h4 class="font-semibold mt-4 mb-2">The Two-Step pH Shift</h4><ol class="list-decimal list-inside text-sm space-y-2"><li><span class="font-semibold">Initial (Acidic Trigger):</span> All tubes turn 🟡 Yellow due to glucose fermentation. This is required to activate the enzyme.</li><li><span class="font-semibold">Final (Alkaline Reversion):</span> If the enzyme is present, it acts on the amino acid, producing alkaline amines and causing the medium to revert to 🟣 Purple.</li></ol><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> Tube reverts to Purple.</li><li><span class="font-bold text-red-600">Negative:</span> Tube remains Yellow.</li></ul>`
+            },
+            {
+                name: "Gelatin Liquefaction",
+                category: "Protein & Amino Acid Metabolism",
+                principle: "Detects the enzyme gelatinase, which hydrolyzes gelatin into smaller polypeptides, causing it to lose its gelling property.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><p class="text-sm">Nutrient Gelatin medium is stabbed and incubated. After incubation, the tube is chilled (e.g., in a refrigerator for 30 minutes).</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> 💧 The medium remains liquid after chilling.</li><li><span class="font-bold text-red-600">Negative:</span> The medium becomes solid again after chilling.</li></ul><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Key Use:</span> Differentiates *Serratia* (+) and *Proteus* (+) from other Enterobacterales.</div>`
+            },
+            {
+                name: "Litmus Milk",
+                category: "Protein & Amino Acid Metabolism",
+                principle: "A complex medium that demonstrates multiple metabolic properties: lactose fermentation, protein digestion, and redox potential changes.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Key Indicator: Litmus</h4><p class="text-sm">Acts as both a pH and redox indicator.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><div class="overflow-x-auto"><table class="w-full text-sm text-left border-collapse"><thead><tr class="bg-slate-100"><th class="p-2 border">Reaction</th><th class="p-2 border">Appearance</th><th class="p-2 border">Mechanism</th></tr></thead><tbody><tr><td class="p-2 border font-medium">Acid Reaction</td><td class="p-2 border">🌸 Pink</td><td class="p-2 border">Lactose fermentation.</td></tr><tr><td class="p-2 border font-medium">Alkaline Reaction</td><td class="p-2 border">🔵 Blue/Purple</td><td class="p-2 border">Digestion of peptones.</td></tr><tr><td class="p-2 border font-medium">Reduction</td><td class="p-2 border">⚪ White</td><td class="p-2 border">Litmus is reduced, losing its color.</td></tr><tr><td class="p-2 border font-medium">Peptonization</td><td class="p-2 border">Translucent, brownish</td><td class="p-2 border">Complete digestion of casein.</td></tr><tr><td class="p-2 border font-medium">Curd Formation</td><td class="p-2 border">Solid clot</td><td class="p-2 border">Acid precipitation of casein.</td></tr></tbody></table></div>`
+            },
+            // Key Enzymes & Products
+            {
+                name: "Methyl Red (MR) & Voges-Proskauer (VP)",
+                category: "Key Enzymes & Products",
+                principle: "Differentiates two major glucose fermentation pathways. Performed on the same MR-VP broth.",
+                details: `<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="p-2"><h4 class="font-semibold text-lg text-center">Methyl Red (MR)</h4><p class="text-sm text-center mb-2">Detects Mixed Acid Fermentation</p><ul class="text-sm space-y-1 p-3 bg-slate-50 rounded-lg"><li><span class="font-semibold">Product:</span> Strong, stable acids</li><li><span class="font-semibold">Reagent:</span> Methyl Red</li><li><span class="font-semibold">Positive:</span> 🔴 Stable Red Color</li></ul></div><div><h4 class="font-semibold text-lg text-center">Voges-Proskauer (VP)</h4><p class="text-sm text-center mb-2">Detects 2,3-Butanediol Fermentation</p><ul class="text-sm space-y-1 p-3 bg-slate-50 rounded-lg"><li><span class="font-semibold">Product:</span> Acetoin</li><li><span class="font-semibold">Reagent:</span> Barritt's (α-naphthol + KOH)</li><li><span class="font-semibold">Positive:</span> 🔴 Red Color</li></ul></div></div><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Exam Pointer:</span> The phosphate buffer in the broth is key. Only robust acid producers can overcome it for a positive MR test. *E. coli* is MR+/VP-, *Klebsiella* is MR-/VP+.</div>`
+            },
+            {
+                name: "Catalase & Oxidase Tests",
+                category: "Key Enzymes & Products",
+                principle: "Detects key respiratory enzymes.",
+                details: `<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><h4 class="font-semibold text-lg text-center">Catalase Test</h4><ul class="text-sm space-y-1 p-3 bg-slate-50 rounded-lg"><li><span class="font-semibold">Principle:</span> Breaks down H₂O₂ into H₂O and O₂.</li><li><span class="font-semibold">Reagent:</span> 3% H₂O₂</li><li><span class="font-semibold">Positive:</span> Effervescence (bubbling).</li><li><span class="font-semibold">Use:</span> *Staphylococcus* (+) vs *Streptococcus* (-).</li></ul></div><div><h4 class="font-semibold text-lg text-center">Oxidase Test</h4><ul class="text-sm space-y-1 p-3 bg-slate-50 rounded-lg"><li><span class="font-semibold">Principle:</span> Detects cytochrome c oxidase.</li><li><span class="font-semibold">Reagent:</span> Tetramethyl-p-phenylenediamine</li><li><span class="font-semibold">Positive:</span> Deep purple/blue color.</li><li><span class="font-semibold">Use:</span> *Pseudomonas* (+) vs Enterobacterales (-).</li></ul></div></div>`
+            },
+            {
+                name: "Coagulase Test",
+                category: "Key Enzymes & Products",
+                principle: "Detects coagulase, which converts fibrinogen to a fibrin clot. Key for S. aureus.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-semibold">Slide Test:</span> Detects bound coagulase ("clumping factor"). Fast but less definitive.</li><li><span class="font-semibold">Tube Test:</span> Detects free coagulase. Definitive test. Positive is a visible fibrin clot in rabbit plasma.</li></ul>`
+            },
+            {
+                name: "Nitrate Reduction Test",
+                category: "Key Enzymes & Products",
+                principle: "Detects the ability of an organism to reduce nitrate (NO₃) to nitrite (NO₂) or further to nitrogen gas (N₂).",
+                details: `<h4 class="font-semibold mt-4 mb-2">Procedure & Interpretation</h4><ol class="list-decimal list-inside text-sm space-y-2"><li>Incubate in Nitrate Broth. Add Reagents A (Sulfanilic Acid) and B (α-naphthylamine).<br>-> If 🔴 <span class="font-bold">Red</span>, test is <span class="font-bold text-green-600">Positive</span> (NO₃ → NO₂).</li><li>If colorless, add Zinc dust.<br>-> If 🔴 <span class="font-bold">Red</span>, test is <span class="font-bold text-red-600">Negative</span> (Zinc reduced the remaining NO₃).<br>-> If colorless, test is <span class="font-bold text-green-600">Positive</span> (NO₃ was reduced beyond NO₂ to N₂ or other compounds).</li></ol><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Exam Pointer:</span> The Zinc step is crucial to confirm a true negative. A colorless result after adding Zinc is a positive result for denitrification.</div>`
+            },
+            {
+                name: "DNase Test",
+                category: "Key Enzymes & Products",
+                principle: "Detects the enzyme deoxyribonuclease (DNase), which hydrolyzes DNA.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><p class="text-sm">Organism is grown on DNase Test Agar. The indicator can be incorporated into the medium or added after incubation.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-semibold">With Toluidine Blue O:</span> Positive is a 🩷 pink/rose-red halo around the growth.</li><li><span class="font-semibold">With Methyl Green:</span> Positive is a colorless halo around the growth.</li><li><span class="font-semibold">With HCl:</span> Add 1N HCl. Positive is a clear halo as the HCl precipitates intact DNA in the rest of the plate.</li></ul><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Key Use:</span> Differentiates *Serratia marcescens* (+) and *Staphylococcus aureus* (+) from similar organisms.</div>`
+            },
+            // Substrate Utilization
+            {
+                name: "Citrate Utilization Test",
+                category: "Substrate Utilization",
+                principle: "Determines if an organism can use citrate as its sole carbon source.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Medium</h4><p class="text-sm">Simmons' Citrate Agar, which contains Sodium Citrate, Ammonium salts, and Bromothymol Blue.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> Growth AND color change from green to 🔵 deep Prussian blue.</li><li><span class="font-bold text-red-600">Negative:</span> No growth, medium remains green.</li></ul>`
+            },
+            {
+                name: "Esculin Hydrolysis Test",
+                category: "Substrate Utilization",
+                principle: "Determines if an organism can hydrolyze esculin in the presence of bile.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Medium</h4><p class="text-sm">Bile Esculin Agar, which contains Esculin, Oxgall (bile), and Ferric Citrate.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> ⚫ Blackening of more than half the slant. The product esculetin reacts with ferric ions.</li><li><span class="font-bold text-red-600">Negative:</span> No blackening.</li></ul><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Key Use:</span> Identifies *Enterococcus* and Group D *Streptococcus*.</div>`
+            },
+            {
+                name: "Malonate Utilization Test",
+                category: "Substrate Utilization",
+                principle: "Determines if an organism can use malonate as its sole carbon source.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Medium</h4><p class="text-sm">Malonate Broth with Bromothymol Blue indicator.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> Utilization leads to alkalinization, changing the indicator from green to 🔵 blue.</li><li><span class="font-bold text-red-600">Negative:</span> Remains green or turns slightly yellow.</li></ul>`
+            },
+            {
+                name: "PYR Hydrolysis Test",
+                category: "Substrate Utilization",
+                principle: "Detects the enzyme L-pyrrolidonyl aminopeptidase.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><p class="text-sm">A disc containing L-pyrrolidonyl-β-naphthylamide (PYR) is used. After a short incubation, a developer reagent (N,N-dimethylaminocinnamaldehyde) is added.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> 🟥 Development of a bright red color.</li><li><span class="font-bold text-red-600">Negative:</span> No color change or a slight yellow/orange.</li></ul><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Key Use:</span> Differentiates *Enterococcus faecalis* (+) from other Group D Streptococci, and *Streptococcus pyogenes* (+) from other beta-hemolytic streptococci.</div>`
+            },
+            {
+                name: "Hippurate Hydrolysis Test",
+                category: "Substrate Utilization",
+                principle: "Detects the enzyme hippuricase, which hydrolyzes sodium hippurate to benzoic acid and glycine.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><p class="text-sm">After incubation in Hippurate Broth, Ninhydrin reagent is added and the tube is heated.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> 🟪 Ninhydrin reacts with the glycine product to form a deep purple/blue color.</li><li><span class="font-bold text-red-600">Negative:</span> Remains colorless or turns slightly yellow.</li></ul><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Key Use:</span> Differentiates *Streptococcus agalactiae* (+), *Campylobacter jejuni* (+), and *Listeria monocytogenes* (+) from similar organisms.</div>`
+            },
+            // Miscellaneous & Specialized
+            {
+                name: "CAMP Test",
+                category: "Miscellaneous & Specialized",
+                principle: "Detects the production of CAMP factor, a protein that acts synergistically with the β-hemolysin of *Staphylococcus aureus* to enhance lysis of red blood cells.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><p class="text-sm">A single streak of a β-hemolysin-producing *S. aureus* is made on a Sheep Blood Agar plate. The test organism is streaked perpendicularly to it, without touching.</p<h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> An arrowhead-shaped (➤) zone of enhanced hemolysis is seen where the two streaks are in close proximity.</li><li><span class="font-bold text-red-600">Negative:</span> No enhancement of hemolysis.</li></ul><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Key Use:</span> Presumptive identification of *Streptococcus agalactiae* (Group B Strep).</div>`
+            },
+            {
+                name: "Reverse CAMP Test",
+                category: "Miscellaneous & Specialized",
+                principle: "Detects the α-toxin (lecithinase) of *Clostridium perfringens*, which inhibits the β-hemolysin of *Staphylococcus aureus*.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><p class="text-sm">A single streak of a β-hemolysin-producing *S. aureus* is made on a Sheep Blood Agar plate. The test organism (*C. perfringens*) is streaked perpendicularly.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> A "bow-tie" or rectangular zone of inhibited hemolysis is observed where the toxins interact.</li></ul>`
+            },
+            {
+                name: "Nagler's Test",
+                category: "Miscellaneous & Specialized",
+                principle: "Detects the production of alpha-toxin (a lecithinase) by *Clostridium perfringens* and specifically neutralizes it with antitoxin.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><p class="text-sm">An Egg Yolk Agar plate is used. One half of the plate has *C. perfringens* type A antitoxin spread on it. The test organism is streaked across both halves.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> A zone of opaque precipitate (lecithinase activity) appears around the growth on the half WITHOUT antitoxin. This reaction is inhibited on the half WITH antitoxin.</li></ul>`
+            },
+            {
+                name: "String Test",
+                category: "Miscellaneous & Specialized",
+                principle: "A rapid, non-culture test to differentiate *Vibrio cholerae* from other Gram-negative bacteria.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><p class="text-sm">A colony is emulsified in a drop of 0.5% Sodium Deoxycholate on a slide. The loop is then slowly lifted from the drop.</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> Formation of a viscous, DNA-based string that stretches between the loop and the slide. *Vibrio* species are susceptible to the bile salt, lyse, and release their DNA.</li><li><span class="font-bold text-red-600">Negative:</span> No string is formed.</li></ul>`
+            },
+            {
+                name: "Optochin & Bacitracin Susceptibility",
+                category: "Miscellaneous & Specialized",
+                principle: "Differentiates streptococci based on their susceptibility to specific chemical agents.",
+                details: `<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><h4 class="font-semibold text-lg text-center">Optochin (P disk)</h4><ul class="text-sm space-y-1 p-3 bg-slate-50 rounded-lg"><li><span class="font-semibold">Principle:</span> Optochin (ethylhydrocupreine hydrochloride) specifically inhibits *Streptococcus pneumoniae*.</li><li><span class="font-semibold">Positive:</span> A zone of inhibition ≥14mm indicates susceptibility.</li><li><span class="font-semibold">Use:</span> Differentiates *S. pneumoniae* (S) from other α-hemolytic streptococci (R).</li></ul></div><div><h4 class="font-semibold text-lg text-center">Bacitracin (A disk)</h4><ul class="text-sm space-y-1 p-3 bg-slate-50 rounded-lg"><li><span class="font-semibold">Principle:</span> A low concentration of Bacitracin specifically inhibits *Streptococcus pyogenes*.</li><li><span class="font-semibold">Positive:</span> Any zone of inhibition indicates susceptibility.</li><li><span class="font-semibold">Use:</span> Differentiates *S. pyogenes* (S) from other β-hemolytic streptococci (R).</li></ul></div></div>`
+            },
+            {
+                name: "Salt Tolerance Test",
+                category: "Miscellaneous & Specialized",
+                principle: "Determines the ability of an organism to grow in a high-salt (6.5% NaCl) environment.",
+                details: `<h4 class="font-semibold mt-4 mb-2">Methodology</h4><p class="text-sm">Organism is inoculated into a broth (e.g., Brain Heart Infusion) containing 6.5% NaCl and a pH indicator (Bromocresol Purple).</p><h4 class="font-semibold mt-4 mb-2">Interpretation</h4><ul class="list-disc list-inside text-sm space-y-1"><li><span class="font-bold text-green-600">Positive:</span> Visible turbidity (growth) in the broth, often with a color change from purple to yellow if glucose is fermented.</li><li><span class="font-bold text-red-600">Negative:</span> Broth remains clear.</li></ul><div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-lg text-sm"><span class="font-bold text-sky-700">Key Use:</span> Differentiates *Enterococcus* species (tolerant) from non-enterococcal Group D streptococci (not tolerant).</div>`
+            },
+        ];
+
+        const testsGrid = document.getElementById('tests-grid');
+        const filterButtonsContainer = document.getElementById('filter-buttons');
+        let currentFilter = 'All';
+
+        const renderTests = (filter = 'All') => {
+            testsGrid.innerHTML = '';
+            
+            const filteredData = testData.filter(test => {
+                const categoryMatch = (filter === 'All' || test.category === filter);
+                return categoryMatch;
+            });
+
+            if (filteredData.length === 0) {
+                 testsGrid.innerHTML = `<div class="col-span-1 md:col-span-2 xl:col-span-3 text-center text-slate-500 py-10">
+                    <h3 class="text-xl font-semibold">No tests found.</h3>
+                    <p>Try adjusting your filter.</p>
+                 </div>`;
+                 return;
+            }
+
+            filteredData.forEach(test => {
+                const card = document.createElement('div');
+                card.className = 'card bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col';
+                card.innerHTML = `
+                    <div class="card-header p-4 cursor-pointer flex justify-between items-center">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg text-sky-700">${test.name}</h3>
+                            <p class="text-sm text-slate-500 mt-1">${test.principle}</p>
+                        </div>
+                        <div class="transform transition-transform duration-300 ml-2 flex-shrink-0">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </div>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div class="border-t pt-4">${test.details}</div>
+                    </div>
+                `;
+                testsGrid.appendChild(card);
+            });
+
+            document.querySelectorAll('.card-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const card = header.parentElement;
+                    card.classList.toggle('open');
+                    const iconContainer = header.querySelector('div.transform');
+                    iconContainer.classList.toggle('rotate-180');
+                });
+            });
+        };
+
+        const renderFilterButtons = () => {
+            const categories = ['All', ...new Set(testData.map(test => test.category))];
+            filterButtonsContainer.innerHTML = categories.map(category => `
+                <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap flex-shrink-0 ${category === 'All' ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}" data-filter="${category}">
+                    ${category}
+                </button>
+            `).join('');
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentFilter = btn.dataset.filter;
+                    document.querySelectorAll('.filter-btn').forEach(b => {
+                        b.classList.remove('bg-sky-600', 'text-white');
+                        b.classList.add('bg-slate-200', 'text-slate-700', 'hover:bg-slate-300');
+                    });
+                    btn.classList.add('bg-sky-600', 'text-white');
+                    btn.classList.remove('bg-slate-200', 'text-slate-700', 'hover:bg-slate-300');
+                    renderTests(currentFilter);
+                });
+            });
+        };
+        
+        const renderIndicatorVisuals = () => {
+            const container = document.getElementById('indicatorVisualsContainer');
+            const indicators = [
+                { name: 'Phenol Red', acidColor: '#fde047', acidName: 'Yellow', neutralColor: '#fb923c', neutralName: 'Reddish-Orange', alkColor: '#f9a8d4', alkName: 'Pink/Red', acidPh: '6.8', alkPh: '7.4' },
+                { name: 'Bromothymol Blue', acidColor: '#fde047', acidName: 'Yellow', neutralColor: '#a3e635', neutralName: 'Green', alkColor: '#60a5fa', alkName: 'Blue', acidPh: '6.0', alkPh: '7.6' },
+                { name: 'Bromocresol Purple', acidColor: '#fde047', acidName: 'Yellow', neutralColor: '#a78bfa', neutralName: 'Grayish-Purple', alkColor: '#d8b4fe', alkName: 'Purple', acidPh: '5.2', alkPh: '6.8' },
+                { name: 'Methyl Red', acidColor: '#f87171', acidName: 'Red', neutralColor: '#fdba74', neutralName: 'Orange', alkColor: '#fde047', alkName: 'Yellow', acidPh: '4.4', alkPh: '6.2' }
+            ];
+
+            let html = '';
+            indicators.forEach(ind => {
+                html += `
+                    <div class="indicator-visual">
+                        <h4 class="font-semibold text-slate-700 text-center mb-2">${ind.name}</h4>
+                        <div class="flex w-full h-8 rounded-md overflow-hidden shadow-inner border">
+                            <div class="w-1/3" style="background-color: ${ind.acidColor};"></div>
+                            <div class="w-1/3" style="background-color: ${ind.neutralColor};"></div>
+                            <div class="w-1/3" style="background-color: ${ind.alkColor};"></div>
+                        </div>
+                        <div class="flex justify-between text-xs mt-1 text-slate-600">
+                            <div class="text-center w-1/3">
+                                <div class="font-bold">${ind.acidName}</div>
+                                <div>pH &lt; ${ind.acidPh}</div>
+                            </div>
+                            <div class="text-center w-1/3">
+                                <div class="font-bold">${ind.neutralName}</div>
+                                <div>pH ${ind.acidPh} - ${ind.alkPh}</div>
+                            </div>
+                            <div class="text-center w-1/3">
+                                <div class="font-bold">${ind.alkName}</div>
+                                <div>pH &gt; ${ind.alkPh}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        };
+
+
+        // Initial render
+        renderFilterButtons();
+        renderTests();
+        renderIndicatorVisuals();
+
+    </script>
+</body>
+</html>
